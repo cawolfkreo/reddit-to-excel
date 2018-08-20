@@ -62,3 +62,4 @@ typings/
 
 #excel files
 .xlsx
+data/*.xlsx
