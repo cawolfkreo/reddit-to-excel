@@ -4,6 +4,7 @@
   "description": "gets reddit posts from a given subreddit and dumps some info of them on an .xlsx file",
   "main": "bot.js",
   "scripts": {
+    "start": "node bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -20,5 +21,10 @@
   "bugs": {
     "url": "https://github.com/cawolfkreo/reddit-to-excel/issues"
   },
-  "homepage": "https://github.com/cawolfkreo/reddit-to-excel#readme"
+  "homepage": "https://github.com/cawolfkreo/reddit-to-excel#readme",
+  "dependencies": {
+    "dotenv": "^6.0.0",
+    "exceljs": "^1.6.0",
+    "snoowrap": "^1.15.2"
+  }
 }
