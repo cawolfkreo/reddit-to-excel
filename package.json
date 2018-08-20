@@ -1,0 +1,24 @@
+{
+  "name": "reddit-to-excel",
+  "version": "1.0.0",
+  "description": "gets reddit posts from a given subreddit and dumps some info of them on an .xlsx file",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cawolfkreo/reddit-to-excel.git"
+  },
+  "keywords": [
+    "reddit",
+    "bot",
+    "excel"
+  ],
+  "author": "Camilo Zambrano Votto",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cawolfkreo/reddit-to-excel/issues"
+  },
+  "homepage": "https://github.com/cawolfkreo/reddit-to-excel#readme"
+}
