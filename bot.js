@@ -101,7 +101,7 @@ function createWorkbook() {
 function writeBook() {
 	file.workbook.xlsx.writeFile(path)
 		.then(() => {
-			console.log(`[${dateNow()}]Added posts to excel file succesfully!!`);
+			console.log(`[${dateNow()}] Added posts to excel file succesfully!!`);
 		})
 		.catch(console.error);
 }
@@ -118,7 +118,7 @@ function loadBook() {
 			})
 			.catch(err => {
 				if (err.message.includes("File not found:")) {
-					console.log(`[${dateNow()}]No ${SUBREDDIT}.xlsx file found. A new one will be created on ${path}`);
+					console.log(`[${dateNow()}] No ${SUBREDDIT}.xlsx file found. A new one will be created on ${path}`);
 					resolve();
 				} else {
 					console.log(err);
@@ -180,10 +180,10 @@ function addPostsToFile() {
 			last = row.values[6]; //Gets the fullname of the last post fetched
 		}
 	});
-	console.log(`[${dateNow()}]Getting new posts from ${SUBREDDIT}`);
+	console.log(`[${dateNow()}] Getting new posts from ${SUBREDDIT}`);
 	getSubredditPosts(last)
 		.then( submissions => {
-			console.log(`[${dateNow()}]Got ${submissions.length} posts from reddit r/${SUBREDDIT}`);
+			console.log(`[${dateNow()}] Got ${submissions.length} posts from reddit r/${SUBREDDIT}`);
 			if (submissions.length>0){
 				for (let i = submissions.length - 1; i >=0; i-- ){
 					const { id, title, selftext, author, created_utc, name } = submissions[i];
@@ -192,7 +192,7 @@ function addPostsToFile() {
 					const row = {id, title, body: selftext, author: username, time, fullname: name};
 					file.worksheet.addRow(row);
 				}
-				console.log(`[${dateNow()}]Adding posts to excel file...`);
+				console.log(`[${dateNow()}] Adding posts to excel file...`);
 				writeBook();
 			}
 		})
@@ -223,7 +223,7 @@ function ready() {
 	const { workbook, worksheet } = createWorkbook();
 	file.workbook = workbook;
 	file.worksheet = worksheet;
-	console.log(`[${dateNow()}]Loading excel file...`);
+	console.log(`[${dateNow()}] Loading excel file...`);
 	loadBook()
 		.then(() => {
 			addPostsToFile();
@@ -231,7 +231,7 @@ function ready() {
 		});
 }
 
-console.log(`[${dateNow()}]Ready!`);
+console.log(`[${dateNow()}] Ready!`);
 /**
  * Executes the ready() function
  */
