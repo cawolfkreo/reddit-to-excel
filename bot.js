@@ -212,7 +212,7 @@ function dateNow() {
 	const min = rightNow.getMinutes();
 	const seconds = rightNow.getSeconds();
 	const res = rightNow.toISOString().slice(0, 10).replace(/-/g, "/");
-	return `${res} - ${hour % 12}:${min}:${seconds} ${hour > 12 ? "pm" : "am"}`;
+	return `${res} - ${hour % 12}:${min}:${seconds>=10? seconds:"0"+seconds} ${hour > 12 ? "pm" : "am"}`;
 }
 
 /**
