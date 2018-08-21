@@ -11,10 +11,36 @@ require("dotenv").config();
 /**
  * Gets the .env values
  */
-const { SUBREDDIT } = process.env;
+const {
+	SUBREDDIT,
+	RCLIENTID,
+	RSECRET,
+	RUSER,
+	RPASS
+} = process.env;
 
 if(!SUBREDDIT) {
 	console.error("ERROR: No SUBREDDIT env variable.\nPerhaps you forgot to add it?");
+	process.exit(1);
+}
+
+if(!RCLIENTID) {
+	console.error("ERROR: No RCLIENTID env variable.\nPerhaps you forgot to add it?");
+	process.exit(1);
+}
+
+if(!RSECRET) {
+	console.error("ERROR: No RSECRET env variable.\nPerhaps you forgot to add it?");
+	process.exit(1);
+}
+
+if(!RUSER) {
+	console.error("ERROR: No RUSER env variable.\nPerhaps you forgot to add it?");
+	process.exit(1);
+}
+
+if(!RPASS) {
+	console.error("ERROR: No RPASS env variable.\nPerhaps you forgot to add it?");
 	process.exit(1);
 }
 
@@ -24,42 +50,23 @@ if(!SUBREDDIT) {
 const Excel = require("exceljs");
 
 /**
- * Object with global data.
+ * snoowrap import.
  */
-const global = {};
+const snoowrap = require("snoowrap");
 
+/**
+ * path for XLSX file
+ */
+const path = `./data/${SUBREDDIT}.xlsx`;
 
+/**
+ * Object that represents file data.
+ */
+const file = {};
 
 /* =============================================
-*                  Functions
+*               Excel Functions
 ================================================*/
-
-/** This function generates a new date with the current
-* time and parses it into a string for logging
-* purposes.*/
-function dateNow() {
-	const rightNow = new Date();
-	const hour = rightNow.getHours();
-	const min = rightNow.getMinutes();
-	const seconds = rightNow.getSeconds();
-	const milis = rightNow.getMilliseconds();
-	const res = rightNow.toISOString().slice(0, 10).replace(/-/g, "/");
-	return `${res} - ${hour}:${min}:${seconds}:${milis} ${hour > 12? "pm":"am"}`;
-}
-
-
-function ready() {
-	const { workbook, worksheet } = createWorkbook();
-	global.workbook = workbook;
-	global.worksheet = worksheet;
-	global.worksheet.addRow({id:1, title:"wea", body:"la Wea", author:"sho", time: new Date()});
-
-	workbook.xlsx.writeFile(`./data/${SUBREDDIT}.xlsx`)
-		.then(() => {
-			console.log("excel Created!");
-		})
-		.catch(err => console.error(err));
-}
 
 /**
  * Creates a standard workbook with a worksheet
@@ -81,6 +88,72 @@ function createWorkbook() {
 		{header: "Time of creation", key:"time"}
 	];
 	return {workbook, worksheet};
+}
+
+/**
+ * Writes the workbook into a file
+ */
+function writeBook() {
+	file.workbook.xlsx.writeFile(path)
+		.then(() => {
+			console.log("excel Created!");
+		})
+		.catch(console.error);
+}
+
+/**
+ * Loads an .xlsx file into the workbook
+ */
+function loadBook() {
+	return new Excel.Workbook().xlsx.readFile(path);
+}
+
+/**
+ * Adds the rows from a workbook to the workbook in the file variable.
+ * @param {Excel.Workbook} workbook the workbook with the original rows
+ */
+function addRows(workbook) {
+	workbook.eachSheet((worksheet,id)=>{
+		if(id === 1) {
+			worksheet.eachRow(({values: [,col1,col2,col3,col4,col5]},rownum)=>{
+				if(rownum > 1) {
+					file.worksheet.addRow([col1, col2, col3, col4, col5]);
+				}
+			});
+		}
+	});
+	console.log("yes!!!!!!");
+	file.worksheet;
+}
+
+/* =============================================
+*            General Functions
+================================================*/
+
+/** This function generates a new date with the current
+* time and parses it into a string for logging
+* purposes.*/
+function dateNow() {
+	const rightNow = new Date();
+	const hour = rightNow.getHours();
+	const min = rightNow.getMinutes();
+	const seconds = rightNow.getSeconds();
+	const milis = rightNow.getMilliseconds();
+	const res = rightNow.toISOString().slice(0, 10).replace(/-/g, "/");
+	return `${res} - ${hour}:${min}:${seconds}:${milis} ${hour > 12? "pm":"am"}`;
+}
+
+
+function ready() {
+	const { workbook, worksheet } = createWorkbook();
+	file.workbook = workbook;
+	file.worksheet = worksheet;
+	// file.worksheet.addRow({id:1, title:"wea", body:"la Wea", author:"sho", time: new Date()});
+
+	// writeBook();
+	loadBook()
+		.then(addRows)
+		.catch(console.error);
 }
 
 console.log(`[${dateNow()}] Ready!`);
