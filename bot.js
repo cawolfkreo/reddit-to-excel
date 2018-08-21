@@ -184,15 +184,17 @@ function addPostsToFile() {
 	getSubredditPosts(last)
 		.then( submissions => {
 			console.log(`[${dateNow()}]Got ${submissions.length} posts from reddit r/${SUBREDDIT}`);
-			for (let i = submissions.length - 1; i >=0; i-- ){
-				const { id, title, selftext, author, created_utc, name } = submissions[i];
-				const time = new Date(created_utc * 1000);
-				const username = "u/"+author.name;
-				const row = {id, title, body: selftext, author: username, time, fullname: name};
-				file.worksheet.addRow(row);
+			if (submissions.length>0){
+				for (let i = submissions.length - 1; i >=0; i-- ){
+					const { id, title, selftext, author, created_utc, name } = submissions[i];
+					const time = new Date(created_utc * 1000);
+					const username = "u/"+author.name;
+					const row = {id, title, body: selftext, author: username, time, fullname: name};
+					file.worksheet.addRow(row);
+				}
+				console.log(`[${dateNow()}]Adding posts to excel file...`);
+				writeBook();
 			}
-			console.log(`[${dateNow()}]Adding posts to excel file...`);
-			writeBook();
 		})
 		.catch(console.err);
 }
