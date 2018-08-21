@@ -19,27 +19,27 @@ const {
 	RPASS
 } = process.env;
 
-if(!SUBREDDIT) {
+if (!SUBREDDIT) {
 	console.error("ERROR: No SUBREDDIT env variable.\nPerhaps you forgot to add it?");
 	process.exit(1);
 }
 
-if(!RCLIENTID) {
+if (!RCLIENTID) {
 	console.error("ERROR: No RCLIENTID env variable.\nPerhaps you forgot to add it?");
 	process.exit(1);
 }
 
-if(!RSECRET) {
+if (!RSECRET) {
 	console.error("ERROR: No RSECRET env variable.\nPerhaps you forgot to add it?");
 	process.exit(1);
 }
 
-if(!RUSER) {
+if (!RUSER) {
 	console.error("ERROR: No RUSER env variable.\nPerhaps you forgot to add it?");
 	process.exit(1);
 }
 
-if(!RPASS) {
+if (!RPASS) {
 	console.error("ERROR: No RPASS env variable.\nPerhaps you forgot to add it?");
 	process.exit(1);
 }
@@ -54,6 +54,10 @@ const Excel = require("exceljs");
  */
 const snoowrap = require("snoowrap");
 
+/* =============================================
+*               global variables
+================================================*/
+
 /**
  * path for XLSX file
  */
@@ -63,6 +67,11 @@ const path = `./data/${SUBREDDIT}.xlsx`;
  * Object that represents file data.
  */
 const file = {};
+
+/**
+ * The id of the setinterval function
+ */
+let intervalId;
 
 /* =============================================
 *               Excel Functions
@@ -77,17 +86,17 @@ function createWorkbook() {
 	workbook.creator = "js bot";
 	workbook.created = current;
 	workbook.modified = current;
-	
+
 	const worksheet = workbook.addWorksheet(SUBREDDIT);
 
 	worksheet.columns = [
-		{header: "Id", key: "id"},
-		{header: "Title of Post", key: "title"},
-		{header: "Body of Post", key: "body"},
-		{header: "Author", key: "author"},
-		{header: "Time of creation", key:"time"}
+		{ header: "Id", key: "id" },
+		{ header: "Title of Post", key: "title" },
+		{ header: "Body of Post", key: "body" },
+		{ header: "Author", key: "author" },
+		{ header: "Time of creation", key: "time" }
 	];
-	return {workbook, worksheet};
+	return { workbook, worksheet };
 }
 
 /**
@@ -102,10 +111,24 @@ function writeBook() {
 }
 
 /**
- * Loads an .xlsx file into the workbook
+ * Loads an .xlsx file and adds it rows into the file object
  */
 function loadBook() {
-	return new Excel.Workbook().xlsx.readFile(path);
+	return new Promise(resolve => {
+		new Excel.Workbook().xlsx.readFile(path)
+			.then(workbook => {
+				addRows(workbook);
+				resolve();
+			})
+			.catch(err => {
+				if (err.message.includes("File not found:")) {
+					console.log(`[${dateNow()}] No ${SUBREDDIT}.xlsx file found. A new one will be created on ${path}`);
+					resolve();
+				} else {
+					console.log(err);
+				}
+			});
+	});
 }
 
 /**
@@ -113,21 +136,65 @@ function loadBook() {
  * @param {Excel.Workbook} workbook the workbook with the original rows
  */
 function addRows(workbook) {
-	workbook.eachSheet((worksheet,id)=>{
-		if(id === 1) {
-			worksheet.eachRow(({values: [,col1,col2,col3,col4,col5]},rownum)=>{
-				if(rownum > 1) {
-					file.worksheet.addRow([col1, col2, col3, col4, col5]);
+	workbook.eachSheet((worksheet, id) => {
+		if (id === 1) {
+			worksheet.eachRow(({ values: [, col1, col2, col3, col4, col5, col6] }, rownum) => {
+				if (rownum > 1) {
+					file.worksheet.addRow([col1, col2, col3, col4, col5, col6]);
 				}
 			});
 		}
 	});
-	console.log("yes!!!!!!");
-	file.worksheet;
 }
 
 /* =============================================
-*            General Functions
+*                Reddit Stuff
+================================================*/
+/**
+ * Configures the reddit wrapper with the enviroment variables.
+ */
+const reddit = new snoowrap({
+	userAgent: "reddit posts to excel by u/cawolf_kreo",
+	clientId: RCLIENTID,
+	clientSecret: RSECRET,
+	username: RUSER,
+	password: RPASS
+});
+
+/**
+ * Gets the post from the subreddit on the enviroment variables.
+ */
+function getSubredditPosts() {
+	return reddit.getSubreddit(SUBREDDIT).getNew({ show: "all", limit: 100 });
+}
+
+/**
+ * Adds the information of reddit posts to the file object, if any change was made
+ */
+function addPostsToFile() {
+	let last = "";
+	file.worksheet.eachRow((row, numRow) => {
+		if (numRow === file.worksheet.rowCount) {
+			last = row.values[6]; //Gets the fullname of the last post fetched
+		}
+	});
+	if (last === "") {
+		console.log("ok");
+	}
+}
+
+function ready() {
+	const { workbook, worksheet } = createWorkbook();
+	file.workbook = workbook;
+	file.worksheet = worksheet;
+	loadBook()
+		.then(() => {
+			addPostsToFile();
+		});
+}
+
+/* =============================================
+*              General Functions
 ================================================*/
 
 /** This function generates a new date with the current
@@ -140,21 +207,24 @@ function dateNow() {
 	const seconds = rightNow.getSeconds();
 	const milis = rightNow.getMilliseconds();
 	const res = rightNow.toISOString().slice(0, 10).replace(/-/g, "/");
-	return `${res} - ${hour}:${min}:${seconds}:${milis} ${hour > 12? "pm":"am"}`;
+	return `${res} - ${hour}:${min}:${seconds}:${milis} ${hour > 12 ? "pm" : "am"}`;
 }
 
 
-function ready() {
-	const { workbook, worksheet } = createWorkbook();
-	file.workbook = workbook;
-	file.worksheet = worksheet;
-	// file.worksheet.addRow({id:1, title:"wea", body:"la Wea", author:"sho", time: new Date()});
+// function ready() {
+// 	const { workbook, worksheet } = createWorkbook();
+// 	file.workbook = workbook;
+// 	file.worksheet = worksheet;
+// 	// file.worksheet.addRow({id:1, title:"wea", body:"la Wea", author:"sho", time: new Date()});
 
-	// writeBook();
-	loadBook()
-		.then(addRows)
-		.catch(console.error);
-}
+// 	// writeBook();
+// 	loadBook()
+// 		.then(addRows)
+// 		.catch(console.error);
+// }
 
 console.log(`[${dateNow()}] Ready!`);
+/**
+ * Executes the ready() function
+ */
 ready();
