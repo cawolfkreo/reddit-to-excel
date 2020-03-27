@@ -23,8 +23,8 @@
   },
   "homepage": "https://github.com/cawolfkreo/reddit-to-excel#readme",
   "dependencies": {
-    "dotenv": "^6.0.0",
-    "exceljs": "^1.6.0",
-    "snoowrap": "^1.15.2"
+    "dotenv": "^6.2.0",
+    "exceljs": "^1.15.0",
+    "snoowrap": "^1.21.0"
   }
 }
